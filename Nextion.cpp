@@ -116,21 +116,21 @@ void CNextion::setIdleInt()
 		sendCommand(command);
 	}
 
-	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
+	::sprintf(command, "allCall.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
 
 	if (m_screenLayout > 2U) {
-		::sprintf(command, "t4.txt=\"%s\"", m_callsign.c_str());
+		::sprintf(command, "callSign.txt=\"%s\"", m_callsign.c_str());
 		sendCommand(command);
-		::sprintf(command, "t5.txt=\"%u\"", m_dmrid);
+		::sprintf(command, "dmrID.txt=\"%u\"", m_dmrid);
 		sendCommand(command);
 		sendCommandAction(17U);
 
-		::sprintf(command, "t30.txt=\"%3.4f\"",m_fl_rxFrequency);  // RX freq
+		::sprintf(command, "rxFreq.txt=\"%3.4f\"",m_fl_rxFrequency);  // RX freq
 		sendCommand(command);
 		sendCommandAction(20U);
 		
-		::sprintf(command, "t32.txt=\"%3.4f\"",m_fl_txFrequency);  // TX freq
+		::sprintf(command, "txFreq.txt=\"%3.4f\"",m_fl_txFrequency);  // TX freq
 		sendCommand(command);
 		sendCommandAction(21U);
 	
@@ -145,26 +145,26 @@ void CNextion::setIdleInt()
 				val /= 1000.0;
 				if (m_displayTempInF) {
 					val = (1.8 * val) + 32.0;
-					::sprintf(command, "t20.txt=\"%2.1f %cF\"", val, 176);
+					::sprintf(command, "cpuTemp.txt=\"%2.1f %cF\"", val, 176);
 				} else {	
-					::sprintf(command, "t20.txt=\"%2.1f %cC\"", val, 176);
+					::sprintf(command, "cpuTemp.txt=\"%2.1f %cC\"", val, 176);
 				}
 				sendCommand(command);
 				sendCommandAction(22U);
 			}
 		}
 		
-		::sprintf(command, "t31.txt=\"%s\"", m_location.c_str());  // location
+		::sprintf(command, "location.txt=\"%s\"", m_location.c_str());  // location
 		sendCommand(command);
 		sendCommandAction(23U);
 	} else {
 		sendCommandAction(17U);
 	}
 	
-	sendCommand("t1.txt=\"MMDVM IDLE\"");
+	sendCommand("sysMsg.txt=\"MMDVM IDLE\"");
 	sendCommandAction(11U);
 
-	::sprintf(command, "t3.txt=\"%s\"", m_ipaddress.c_str());
+	::sprintf(command, "ipAddy.txt=\"%s\"", m_ipaddress.c_str());
 	sendCommand(command);
 	sendCommandAction(16U);
 
@@ -186,11 +186,11 @@ void CNextion::setErrorInt(const char* text)
 		sendCommand(command);
 	}
 
-	::sprintf(command, "t0.txt=\"%s\"", text);
+	::sprintf(command, "allCall.txt=\"%s\"", text);
 	sendCommandAction(13U);
 
 	sendCommand(command);
-	sendCommand("t1.txt=\"ERROR\"");
+	sendCommand("sysMsg.txt=\"ERROR\"");
 	sendCommandAction(14U);
 
 	m_clockDisplayTimer.stop();
@@ -209,7 +209,7 @@ void CNextion::setLockoutInt()
 		sendCommand(command);
 	}
 
-	sendCommand("t0.txt=\"LOCKOUT\"");
+	sendCommand("sysMsg.txt=\"LOCKOUT\"");
 	sendCommandAction(15U);
 
 	m_clockDisplayTimer.stop();
@@ -228,11 +228,11 @@ void CNextion::setQuitInt()
 		sendCommand(command);
 	}
 
-	::sprintf(command, "t3.txt=\"%s\"", m_ipaddress.c_str());
+	::sprintf(command, "ipAddy.txt=\"%s\"", m_ipaddress.c_str());
 	sendCommand(command);
 	sendCommandAction(16U);
 
-	sendCommand("t0.txt=\"MMDVM STOPPED\"");
+	sendCommand("sysMsg.txt=\"MMDVM STOPPED\"");
 	sendCommandAction(19U);
 
 	m_clockDisplayTimer.stop();
@@ -259,16 +259,16 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 		sendCommand(text);
 	}
 
-	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
+	::sprintf(text, "allCall.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 	sendCommandAction(42U);
 
-	::sprintf(text, "t1.txt=\"%.8s\"", your);
+	::sprintf(text, "source.txt=\"%.8s\"", your);
 	sendCommand(text);
 	sendCommandAction(45U);
 
 	if (::strcmp(reflector, "        ") != 0) {
-		::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
+		::sprintf(text, "destination.txt=\"via %.8s\"", reflector);
 		sendCommand(text);
 		sendCommandAction(46U);
 	}
@@ -289,7 +289,7 @@ void CNextion::writeDStarRSSIInt(unsigned char rssi)
 
 	if (m_rssiCount1 == DSTAR_RSSI_COUNT) {
 		char text[25U];
-		::sprintf(text, "t3.txt=\"-%udBm\"", m_rssiAccum1 / DSTAR_RSSI_COUNT);
+		::sprintf(text, "rssi1.txt=\"-%udBm\"", m_rssiAccum1 / DSTAR_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(47U);
 		m_rssiAccum1 = 0U;
@@ -304,7 +304,7 @@ void CNextion::writeDStarBERInt(float ber)
 
 	if (m_berCount1 == DSTAR_BER_COUNT) {
 		char text[25U];
-		::sprintf(text, "t4.txt=\"%.1f%%\"", m_berAccum1 / float(DSTAR_BER_COUNT));
+		::sprintf(text, "ber1.txt=\"%.1f%%\"", m_berAccum1 / float(DSTAR_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(48U);
 		m_berAccum1 = 0.0F;
@@ -314,12 +314,13 @@ void CNextion::writeDStarBERInt(float ber)
 
 void CNextion::clearDStarInt()
 {
-	sendCommand("t0.txt=\"Listening\"");
+	sendCommand("sysMsg.txt=\"Listening\"");
 	sendCommandAction(41U);
-	sendCommand("t1.txt=\"\"");
-	sendCommand("t2.txt=\"\"");
-	sendCommand("t3.txt=\"\"");
-	sendCommand("t4.txt=\"\"");
+	sendCommand("allCall.txt=\"\"");
+	sendCommand("source.txt=\"\"");
+	sendCommand("destination.txt=\"\"");
+	sendCommand("rssi1.txt=\"\"");
+	sendCommand("ber1.txt=\"\"");
 }
 
 void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -559,15 +560,15 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 		sendCommand(text);
 	}
 
-	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
+	::sprintf(text, "allCall.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 	sendCommandAction(82U);
 
-	::sprintf(text, "t1.txt=\"%.10s\"", dest);
+	::sprintf(text, "destination.txt=\"%.10s\"", dest);
 	sendCommand(text);
 	sendCommandAction(83U);
 	if (::strcmp(origin, "          ") != 0) {
-		::sprintf(text, "t2.txt=\"at %.10s\"", origin);
+		::sprintf(text, "source.txt=\"at %.10s\"", origin);
 		sendCommand(text);
 		sendCommandAction(84U);
 	}
@@ -588,7 +589,7 @@ void CNextion::writeFusionRSSIInt(unsigned char rssi)
 
 	if (m_rssiCount1 == YSF_RSSI_COUNT) {
 		char text[25U];
-		::sprintf(text, "t3.txt=\"-%udBm\"", m_rssiAccum1 / YSF_RSSI_COUNT);
+		::sprintf(text, "rssi1.txt=\"-%udBm\"", m_rssiAccum1 / YSF_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(85U);
 		m_rssiAccum1 = 0U;
@@ -603,7 +604,7 @@ void CNextion::writeFusionBERInt(float ber)
 
 	if (m_berCount1 == YSF_BER_COUNT) {
 		char text[25U];
-		::sprintf(text, "t4.txt=\"%.1f%%\"", m_berAccum1 / float(YSF_BER_COUNT));
+		::sprintf(text, "ber1.txt=\"%.1f%%\"", m_berAccum1 / float(YSF_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(86U);
 		m_berAccum1 = 0.0F;
@@ -613,12 +614,13 @@ void CNextion::writeFusionBERInt(float ber)
 
 void CNextion::clearFusionInt()
 {
-	sendCommand("t0.txt=\"Listening\"");
+	sendCommand("sysMsg.txt=\"Listening\"");
 	sendCommandAction(81U);
-	sendCommand("t1.txt=\"\"");
-	sendCommand("t2.txt=\"\"");
-	sendCommand("t3.txt=\"\"");
-	sendCommand("t4.txt=\"\"");
+	sendCommand("allCall.txt=\"\"");
+	sendCommand("source.txt=\"\"");
+	sendCommand("destination.txt=\"\"");
+	sendCommand("ber1.txt=\"\"");
+	sendCommand("rssi1.txt=\"\"");
 }
 
 void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
@@ -637,11 +639,11 @@ void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, co
 		sendCommand(text);
 	}
 
-	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
+	::sprintf(text, "allCall.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 	sendCommandAction(102U);
 
-	::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dest);
+	::sprintf(text, "destination.txt=\"%s%u\"", group ? "TG" : "", dest);
 	sendCommand(text);
 	sendCommandAction(103U);
 
@@ -661,7 +663,7 @@ void CNextion::writeP25RSSIInt(unsigned char rssi)
 
 	if (m_rssiCount1 == P25_RSSI_COUNT) {
 		char text[25U];
-		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / P25_RSSI_COUNT);
+		::sprintf(text, "rssi1.txt=\"-%udBm\"", m_rssiAccum1 / P25_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(104U);
 		m_rssiAccum1 = 0U;
@@ -676,7 +678,7 @@ void CNextion::writeP25BERInt(float ber)
 
 	if (m_berCount1 == P25_BER_COUNT) {
 		char text[25U];
-		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(P25_BER_COUNT));
+		::sprintf(text, "ber1.txt=\"%.1f%%\"", m_berAccum1 / float(P25_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(105U);
 		m_berAccum1 = 0.0F;
@@ -686,11 +688,12 @@ void CNextion::writeP25BERInt(float ber)
 
 void CNextion::clearP25Int()
 {
-	sendCommand("t0.txt=\"Listening\"");
+	sendCommand("sysMsg.txt=\"Listening\"");
 	sendCommandAction(101U);
-	sendCommand("t1.txt=\"\"");
-	sendCommand("t2.txt=\"\"");
-	sendCommand("t3.txt=\"\"");
+	sendCommand("allCall.txt=\"\"");
+	sendCommand("destination.txt=\"\"");
+	sendCommand("rssi1.txt=\"\"");
+	sendCommand("ber1.txt=\"\"");
 }
 
 void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
@@ -709,11 +712,11 @@ void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, c
 		sendCommand(text);
 	}
 
-	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
+	::sprintf(text, "allCall.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 	sendCommandAction(122U);
 
-	::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dest);
+	::sprintf(text, "destination.txt=\"%s%u\"", group ? "TG" : "", dest);
 	sendCommand(text);
 	sendCommandAction(123U);
 
@@ -733,7 +736,7 @@ void CNextion::writeNXDNRSSIInt(unsigned char rssi)
 
 	if (m_rssiCount1 == NXDN_RSSI_COUNT) {
 		char text[25U];
-		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / NXDN_RSSI_COUNT);
+		::sprintf(text, "rssi1.txt=\"-%udBm\"", m_rssiAccum1 / NXDN_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(124U);
 		m_rssiAccum1 = 0U;
@@ -748,7 +751,7 @@ void CNextion::writeNXDNBERInt(float ber)
 
 	if (m_berCount1 == NXDN_BER_COUNT) {
 		char text[25U];
-		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(NXDN_BER_COUNT));
+		::sprintf(text, "ber1.txt=\"%.1f%%\"", m_berAccum1 / float(NXDN_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(125U);
 		m_berAccum1 = 0.0F;
@@ -758,11 +761,12 @@ void CNextion::writeNXDNBERInt(float ber)
 
 void CNextion::clearNXDNInt()
 {
-	sendCommand("t0.txt=\"Listening\"");
+	sendCommand("sysMsg.txt=\"Listening\"");
 	sendCommandAction(121U);
-	sendCommand("t1.txt=\"\"");
-	sendCommand("t2.txt=\"\"");
-	sendCommand("t3.txt=\"\"");
+	sendCommand("allCall.txt=\"\"");
+	sendCommand("destination.txt=\"\"");
+	sendCommand("rssi1.txt=\"\"");
+	sendCommand("ber1.txt=\"\"");
 }
 
 void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
@@ -778,11 +782,11 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 		sendCommand(text);
 	}
 
-	::sprintf(text, "t0.txt=\"RIC: %u\"", ric);
+	::sprintf(text, "allCall.txt=\"RIC: %u\"", ric);
 	sendCommand(text);
 	sendCommandAction(132U);
 
-	::sprintf(text, "t1.txt=\"%s\"", message.c_str());
+	::sprintf(text, "pocMsg.txt=\"%s\"", message.c_str());
 	sendCommand(text);
 	sendCommandAction(133U);
 
@@ -793,14 +797,15 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 void CNextion::clearPOCSAGInt()
 {
-	sendCommand("t0.txt=\"Waiting\"");
+	sendCommand("sysMsg.txt=\"Waiting\"");
 	sendCommandAction(134U);
-	sendCommand("t1.txt=\"\"");
+	sendCommand("pocMsg.txt=\"\"");
+	sendCommand("allCall.txt=\"\"");
 }
 
 void CNextion::writeCWInt()
 {
-	sendCommand("t1.txt=\"Sending CW Ident\"");
+	sendCommand("sysMsg.txt=\"Sending CW Ident\"");
 	sendCommandAction(12U);
 	m_clockDisplayTimer.start();
 
@@ -809,7 +814,7 @@ void CNextion::writeCWInt()
 
 void CNextion::clearCWInt()
 {
-	sendCommand("t1.txt=\"MMDVM IDLE\"");
+	sendCommand("sysMsg.txt=\"MMDVM IDLE\"");
 	sendCommandAction(11U);
 }
 
@@ -829,7 +834,7 @@ void CNextion::clockInt(unsigned int ms)
 
 		setlocale(LC_TIME,"");
 		char text[50U];
-		strftime(text, 50, "t2.txt=\"%x %X\"", Time);
+		strftime(text, 50, "timeNow.txt=\"%x %X\"", Time);
 		sendCommand(text);
 
 		m_clockDisplayTimer.start(); // restart the clock display timer
